@@ -41,11 +41,14 @@ class Album extends React.Component {
 
     const renderAlbun = () => (
       <div>
-        {musics.map(({ previewUrl, trackId, trackName }, index) => {
+        {musics.map((music, index) => {
           let listMusics = null;
           if (index !== 0) {
             listMusics = (
-              <MusicCard key={ trackId } musicPreviw={ previewUrl } name={ trackName } />
+              <MusicCard
+                key={ music.trackId }
+                musicElemnt={ music }
+              />
             );
           }
           return listMusics;
