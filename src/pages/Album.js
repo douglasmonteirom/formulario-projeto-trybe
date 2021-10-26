@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Header from '../components/Header';
 import getMusics from '../services/musicsAPI';
+import { getFavoriteSongs, addSong, removeSong } from '../services/favoriteSongsAPI';
 import Loading from './Loading';
 import MusicCard from '../components/MusicCard';
 
@@ -15,17 +16,44 @@ class Album extends React.Component {
       loading: true,
       albumName: '',
       artistName: '',
+      favorites: [],
     };
   }
 
   async componentDidMount() {
     this.fetchGetMusics();
+    this.getFavorites();
   }
+
+  async getFavorites() {
+    const favoritesSongs = await getFavoriteSongs();
+    this.setState({
+      favorites: favoritesSongs,
+    });
+  }
+
+  addSongFav = async (e, music) => {
+    const { favorites } = this.state;
+    this.setState({ loading: true },
+      async () => {
+        console.log(e.target.checked);
+        if (!e.target.checked) {
+          await addSong(music);
+          console.log('add');
+          this.setState({ loading: false, favorites: [...favorites, music] });
+        } else {
+          await removeSong(music);
+          console.log('remove');
+          const newFavorites = favorites.filter((song) => song.trackId !== music.trackId);
+          this.setState({ loading: false, favorites: newFavorites });
+        }
+        console.log(e.target.checked);
+      });
+  };
 
   async fetchGetMusics() {
     const { id } = this.state;
-    const { match } = this.props;
-    this.setState({ id: match.params.id, loading: false },
+    this.setState({ loading: false },
       async () => {
         const list = await getMusics(id);
         this.setState({
@@ -37,7 +65,7 @@ class Album extends React.Component {
   }
 
   render() {
-    const { loading, musics, artistName, albumName } = this.state;
+    const { loading, musics, artistName, albumName, favorites } = this.state;
 
     const renderAlbun = () => (
       <div>
@@ -48,6 +76,10 @@ class Album extends React.Component {
               <MusicCard
                 key={ music.trackId }
                 musicElemnt={ music }
+                favsSongs={ favorites.some(
+                  (song) => song.trackId === music.trackId,
+                ) }
+                handler={ this.addSongFav }
               />
             );
           }
@@ -61,7 +93,8 @@ class Album extends React.Component {
         <Header />
         <h1 data-testid="artist-name">{ artistName }</h1>
         <h2 data-testid="album-name">{ albumName }</h2>
-        {loading ? <Loading /> : renderAlbun()}
+        {loading && <Loading /> }
+        {renderAlbun()}
       </div>
     );
   }
