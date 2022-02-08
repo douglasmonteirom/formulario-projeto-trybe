@@ -20,7 +20,7 @@ class Album extends React.Component {
     };
   }
 
-  async componentDidMount() {
+  componentDidMount() {
     this.fetchGetMusics();
     this.getFavorites();
   }
@@ -36,18 +36,14 @@ class Album extends React.Component {
     const { favorites } = this.state;
     this.setState({ loading: true },
       async () => {
-        console.log(e.target.checked);
         if (!e.target.checked) {
           await addSong(music);
-          console.log('add');
           this.setState({ loading: false, favorites: [...favorites, music] });
         } else {
           await removeSong(music);
-          console.log('remove');
           const newFavorites = favorites.filter((song) => song.trackId !== music.trackId);
           this.setState({ loading: false, favorites: newFavorites });
         }
-        console.log(e.target.checked);
       });
   };
 
